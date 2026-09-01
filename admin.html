@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <title>Painel Administrativo • Victor & Gaby</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./config.js"></script>
+
+  <style>
+    :root{
+      --ink:#11100f;
+      --brown:#5a402d;
+      --deep:#3f2d21;
+      --cream:#faf5ed;
+      --cream2:#f2e5d3;
+      --gold:#bc8a3f;
+      --pink:#e8a7ba;
+      --blue:#8fb9ed;
+      --muted:#625b54;
+      --line:#d8c7b2;
+      --soft:#eadfce;
+      --white:#ffffff;
+      --danger:#9b2c2c;
+      --success:#2f6b43;
+    }
+
+    *{box-sizing:border-box}
+
+    html{-webkit-text-size-adjust:100%}
+
+    body{
+      margin:0;
+      background:#fff;
+      color:var(--ink);
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    }
+
+    button,input{font:inherit}
+
+    .app{
+      max-width:1180px;
+      margin:0 auto;
+      padding:18px 14px 42px;
+    }
+
+    .panel{
+      background:#fff;
+      border:1px solid var(--soft);
+      border-radius:30px;
+      overflow:hidden;
+      box-shadow:0 16px 42px rgba(63,45,33,.08);
+    }
+
+    .header{
+      padding:28px 24px;
+      background:var(--deep);
+      color:#fff;
+    }
+
+    .eyebrow{
+      font-size:.73rem;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      font-weight:850;
+      color:#e8ca94;
+    }
+
+    .header h1{
+      margin:7px 0 0;
+      font-size:clamp(2rem,6vw,3.1rem);
+      letter-spacing:-.04em;
+      line-height:1;
+    }
+
+    .header p{
+      margin:10px 0 0;
+      color:rgba(255,255,255,.77);
+      line-height:1.5;
+    }
+
+    .body{padding:22px}
+
+    .login{
+      max-width:470px;
+      margin:18px auto 24px;
+    }
+
+    .login-card{
+      background:var(--cream);
+      border:1px solid #dec9aa;
+      border-radius:22px;
+      padding:20px;
+    }
+
+    .label{
+      display:block;
+      margin:0 0 8px;
+      font-weight:820;
+      color:var(--deep);
+    }
+
+    input{
+      width:100%;
+      padding:15px;
+      border-radius:16px;
+      border:1.5px solid var(--line);
+      background:#fff;
+      color:var(--ink);
+      outline:none;
+      font-size:16px;
+    }
+
+    input:focus{
+      border-color:var(--brown);
+      box-shadow:0 0 0 4px rgba(90,64,45,.10);
+    }
+
+    .btn{
+      min-height:52px;
+      border:0;
+      border-radius:16px;
+      padding:12px 16px;
+      margin-top:10px;
+      font-weight:850;
+      cursor:pointer;
+      background:var(--deep);
+      color:#fff;
+    }
+
+    .btn.secondary{
+      background:var(--cream2);
+      color:var(--deep);
+      border:1px solid #d7bea0;
+    }
+
+    .btn.white{
+      background:#fff;
+      color:var(--deep);
+      border:1.5px solid var(--line);
+    }
+
+    .btn:disabled{
+      opacity:.5;
+      cursor:not-allowed;
+    }
+
+    .status{
+      min-height:22px;
+      margin-top:9px;
+      color:var(--muted);
+      font-size:.92rem;
+    }
+
+    .status.error{color:var(--danger)}
+    .status.success{color:var(--success)}
+
+    .hidden{display:none !important}
+
+    .toolbar{
+      display:flex;
+      flex-wrap:wrap;
+      gap:9px;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:14px;
+    }
+
+    .toolbar-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+
+    .toolbar .btn{margin-top:0}
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:10px;
+    }
+
+    .stat{
+      background:var(--cream);
+      border:1px solid #dfcbaa;
+      border-radius:19px;
+      padding:18px;
+    }
+
+    .stat b{
+      display:block;
+      font-size:1.8rem;
+      line-height:1;
+      letter-spacing:-.04em;
+      color:var(--deep);
+    }
+
+    .stat span{
+      display:block;
+      margin-top:7px;
+      color:var(--muted);
+      font-size:.84rem;
+      line-height:1.35;
+    }
+
+    .card{
+      margin-top:14px;
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:18px;
+      background:#fff;
+    }
+
+    .card h2{
+      margin:0 0 12px;
+      font-size:1.15rem;
+      letter-spacing:-.02em;
+    }
+
+    .result-grid{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:10px;
+    }
+
+    .result-box{
+      border-radius:18px;
+      padding:17px;
+      border:1px solid var(--line);
+      background:#fff;
+    }
+
+    .result-box .big{
+      font-size:1.7rem;
+      font-weight:900;
+      color:var(--deep);
+    }
+
+    .result-box .small{
+      margin-top:5px;
+      font-size:.83rem;
+      color:var(--muted);
+    }
+
+    .scroll{overflow-x:auto}
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:830px;
+      font-size:.89rem;
+    }
+
+    th,td{
+      text-align:left;
+      padding:11px 8px;
+      border-bottom:1px solid var(--soft);
+      vertical-align:top;
+    }
+
+    th{
+      color:var(--deep);
+      font-size:.78rem;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+    }
+
+    tr:last-child td{border-bottom:0}
+
+    .pill{
+      display:inline-block;
+      padding:5px 8px;
+      border-radius:999px;
+      font-size:.77rem;
+      font-weight:800;
+      background:var(--cream2);
+      color:var(--deep);
+    }
+
+    .pending{
+      color:#8a5c18;
+      font-weight:750;
+    }
+
+    .ok{
+      color:var(--success);
+      font-weight:750;
+    }
+
+    .muted{
+      color:var(--muted);
+      line-height:1.48;
+    }
+
+    .message{
+      max-width:520px;
+      white-space:pre-wrap;
+      line-height:1.45;
+    }
+
+    @media(max-width:820px){
+      .grid,.result-grid{grid-template-columns:1fr 1fr}
+      .body{padding:16px}
+      .header{padding:25px 18px}
+    }
+
+    @media(max-width:470px){
+      .grid,.result-grid{grid-template-columns:1fr}
+      .app{padding:10px}
+      .panel{border-radius:24px}
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <section class="panel">
+
+      <header class="header">
+        <div class="eyebrow">Área administrativa</div>
+        <h1>Victor &amp; Gaby</h1>
+        <p>Confirmações, palpites individuais, recados e resultados do chá revelação.</p>
+      </header>
+
+      <div class="body">
+
+        <section id="loginArea" class="login">
+          <div class="login-card">
+            <label class="label" for="adminCode">Código administrativo</label>
+            <input
+              id="adminCode"
+              type="password"
+              placeholder="Digite seu código"
+              autocomplete="current-password"
+            >
+            <button id="loginBtn" class="btn" type="button">Entrar no painel</button>
+            <div id="loginStatus" class="status" aria-live="polite"></div>
+          </div>
+        </section>
+
+        <section id="dashboard" class="hidden">
+
+          <div class="toolbar">
+            <div>
+              <strong>Painel do evento</strong>
+              <div id="lastUpdate" class="muted" style="font-size:.83rem;margin-top:3px"></div>
+            </div>
+
+            <div class="toolbar-actions">
+              <button id="refreshBtn" class="btn white" type="button">Atualizar</button>
+              <button id="logoutBtn" class="btn secondary" type="button">Sair</button>
+            </div>
+          </div>
+
+          <div class="grid">
+            <div class="stat">
+              <b id="totalGuests">0</b>
+              <span>Pessoas cadastradas</span>
+            </div>
+
+            <div class="stat">
+              <b id="confirmedGuests">0</b>
+              <span>Pessoas em convites confirmados</span>
+            </div>
+
+            <div class="stat">
+              <b id="totalVotes">0</b>
+              <span>Palpites recebidos</span>
+            </div>
+
+            <div class="stat">
+              <b id="totalMessages">0</b>
+              <span>Recados recebidos</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>Resultado geral</h2>
+
+            <div class="result-grid">
+              <div class="result-box">
+                <div id="boyVotes" class="big">0</div>
+                <div class="small">Menino 💙</div>
+              </div>
+
+              <div class="result-box">
+                <div id="girlVotes" class="big">0</div>
+                <div class="small">Menina 🩷</div>
+              </div>
+
+              <div class="result-box">
+                <div id="boyPct" class="big">0%</div>
+                <div class="small">Percentual Menino</div>
+              </div>
+
+              <div class="result-box">
+                <div id="girlPct" class="big">0%</div>
+                <div class="small">Percentual Menina</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>Convidados e respostas</h2>
+
+            <div class="scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Convite</th>
+                    <th>Pessoa</th>
+                    <th>Tipo</th>
+                    <th>Fralda</th>
+                    <th>Confirmado por</th>
+                    <th>Palpite</th>
+                    <th>Recado</th>
+                  </tr>
+                </thead>
+                <tbody id="peopleRows"></tbody>
+              </table>
+            </div>
+
+            <div class="toolbar-actions" style="margin-top:12px">
+              <button id="exportPeople" class="btn" type="button">Exportar convidados CSV</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>Recados para a criança</h2>
+
+            <div class="scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Convite</th>
+                    <th>Pessoa</th>
+                    <th>Mensagem</th>
+                    <th>Data</th>
+                  </tr>
+                </thead>
+                <tbody id="messageRows"></tbody>
+              </table>
+            </div>
+
+            <div class="toolbar-actions" style="margin-top:12px">
+              <button id="exportMessages" class="btn" type="button">Exportar recados CSV</button>
+            </div>
+
+            <p class="muted" style="margin-bottom:0">
+              A geração das artes PNG dos recados será adicionada depois, usando o layout final que você escolher.
+            </p>
+          </div>
+
+        </section>
+
+      </div>
+    </section>
+  </main>
+
+<script>
+(() => {
+  "use strict";
+
+  const $ = (id) => document.getElementById(id);
+
+  const config = window.CHA_CONFIG || {};
+  const url = config.SUPABASE_URL || "";
+  const key = config.SUPABASE_ANON_KEY || "";
+
+  const configured =
+    typeof url === "string" &&
+    url.startsWith("https://") &&
+    !url.includes("COLE_AQUI") &&
+    typeof key === "string" &&
+    key.length > 10 &&
+    !key.includes("COLE_AQUI");
+
+  const db = configured
+    ? window.supabase.createClient(url, key)
+    : null;
+
+  let adminCode = "";
+  let snapshot = null;
+
+  function safe(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function formatDate(value) {
+    if (!value) return "—";
+
+    try {
+      return new Date(value).toLocaleString("pt-BR");
+    } catch {
+      return "—";
+    }
+  }
+
+  function setLoginStatus(text, type = "") {
+    const el = $("loginStatus");
+    el.textContent = text;
+    el.className = "status" + (type ? " " + type : "");
+  }
+
+  function csvDownload(filename, rows) {
+    if (!Array.isArray(rows) || rows.length === 0) {
+      alert("Não há dados para exportar.");
+      return;
+    }
+
+    const headers = Object.keys(rows[0]);
+
+    const escapeCsv = (value) =>
+      `"${String(value ?? "").replaceAll('"', '""')}"`;
+
+    const lines = [
+      headers.map(escapeCsv).join(","),
+      ...rows.map(row =>
+        headers.map(header => escapeCsv(row[header])).join(",")
+      )
+    ];
+
+    const csv = "\ufeff" + lines.join("\r\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const objectUrl = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = objectUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+  }
+
+  function render(data) {
+    snapshot = data;
+
+    const s = data.summary || {};
+
+    $("totalGuests").textContent = s.total_guests ?? 0;
+    $("confirmedGuests").textContent = s.confirmed_guests ?? 0;
+    $("totalVotes").textContent = s.total_votes ?? 0;
+    $("totalMessages").textContent = s.total_messages ?? 0;
+
+    $("boyVotes").textContent = s.boy_votes ?? 0;
+    $("girlVotes").textContent = s.girl_votes ?? 0;
+
+    $("boyPct").textContent = `${s.boy_pct ?? 0}%`;
+    $("girlPct").textContent = `${s.girl_pct ?? 0}%`;
+
+    const people = Array.isArray(data.people) ? data.people : [];
+    const messages = Array.isArray(data.messages) ? data.messages : [];
+
+    $("peopleRows").innerHTML = people.length
+      ? people.map(person => {
+          const vote = person.vote
+            ? `<span class="pill">${safe(person.vote === "menino" ? "Menino 💙" : "Menina 🩷")}</span>`
+            : `<span class="pending">Pendente</span>`;
+
+          const messageStatus = person.has_message
+            ? `<span class="ok">Enviado</span>`
+            : `<span class="pending">Pendente</span>`;
+
+          return `
+            <tr>
+              <td>${safe(person.group_name)}</td>
+              <td><strong>${safe(person.person)}</strong></td>
+              <td>${person.role_type === "crianca" ? "Criança" : "Adulto"}</td>
+              <td><strong>${safe(person.diaper_size)}</strong></td>
+              <td>${safe(person.confirmed_by || "—")}</td>
+              <td>${vote}</td>
+              <td>${messageStatus}</td>
+            </tr>
+          `;
+        }).join("")
+      : `<tr><td colspan="7" class="muted">Nenhum convidado cadastrado.</td></tr>`;
+
+    $("messageRows").innerHTML = messages.length
+      ? messages.map(message => `
+          <tr>
+            <td>${safe(message.group_name)}</td>
+            <td><strong>${safe(message.person)}</strong></td>
+            <td class="message">${safe(message.message)}</td>
+            <td>${safe(formatDate(message.created_at))}</td>
+          </tr>
+        `).join("")
+      : `<tr><td colspan="4" class="muted">Nenhum recado recebido ainda.</td></tr>`;
+
+    $("lastUpdate").textContent =
+      "Atualizado em " + new Date().toLocaleString("pt-BR");
+  }
+
+  async function loadDashboard() {
+    if (!db) {
+      setLoginStatus(
+        "O Supabase não está configurado. Verifique o arquivo config.js.",
+        "error"
+      );
+      return;
+    }
+
+    if (!adminCode.trim()) {
+      setLoginStatus("Digite o código administrativo.", "error");
+      return;
+    }
+
+    $("loginBtn").disabled = true;
+    setLoginStatus("Carregando…");
+
+    try {
+      const { data, error } = await db.rpc("admin_snapshot", {
+        p_code: adminCode
+      });
+
+      if (error) {
+        console.error("Erro do Supabase:", error);
+        setLoginStatus(
+          "Erro ao acessar o painel. Verifique o banco e tente novamente.",
+          "error"
+        );
+        return;
+      }
+
+      if (!data || data.status !== "ok") {
+        setLoginStatus("Código administrativo inválido.", "error");
+        return;
+      }
+
+      $("loginArea").classList.add("hidden");
+      $("dashboard").classList.remove("hidden");
+
+      render(data);
+
+    } catch (error) {
+      console.error(error);
+
+      setLoginStatus(
+        "Não foi possível conectar ao Supabase.",
+        "error"
+      );
+
+    } finally {
+      $("loginBtn").disabled = false;
+    }
+  }
+
+  $("loginBtn").addEventListener("click", () => {
+    adminCode = $("adminCode").value.trim();
+    loadDashboard();
+  });
+
+  $("adminCode").addEventListener("keydown", event => {
+    if (event.key === "Enter") {
+      adminCode = $("adminCode").value.trim();
+      loadDashboard();
+    }
+  });
+
+  $("refreshBtn").addEventListener("click", loadDashboard);
+
+  $("logoutBtn").addEventListener("click", () => {
+    adminCode = "";
+    snapshot = null;
+
+    $("adminCode").value = "";
+    $("dashboard").classList.add("hidden");
+    $("loginArea").classList.remove("hidden");
+
+    setLoginStatus("");
+  });
+
+  $("exportPeople").addEventListener("click", () => {
+    const people = snapshot?.people || [];
+
+    const exportRows = people.map(person => ({
+      convite: person.group_name,
+      pessoa: person.person,
+      tipo: person.role_type === "crianca" ? "Criança" : "Adulto",
+      fralda: person.diaper_size,
+      confirmado_por: person.confirmed_by || "",
+      palpite: person.vote || "Pendente",
+      recado: person.has_message ? "Enviado" : "Pendente"
+    }));
+
+    csvDownload("convidados-cha-revelacao.csv", exportRows);
+  });
+
+  $("exportMessages").addEventListener("click", () => {
+    const messages = snapshot?.messages || [];
+
+    const exportRows = messages.map(message => ({
+      convite: message.group_name,
+      pessoa: message.person,
+      mensagem: message.message,
+      data: formatDate(message.created_at)
+    }));
+
+    csvDownload("recados-cha-revelacao.csv", exportRows);
+  });
+
+  if (!configured) {
+    setLoginStatus(
+      "Configure o Supabase no arquivo config.js antes de usar o painel.",
+      "error"
+    );
+  }
+})();
+</script>
+</body>
+</html>
