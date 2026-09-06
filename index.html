@@ -428,7 +428,7 @@ textarea{min-height:124px;resize:vertical;line-height:1.5}
 
   const MAPS_URL = "https://maps.app.goo.gl/kLAfypuQsnPy7Ydy7?g_st=ic";
   const WHATSAPP_GROUP_URL = "https://chat.whatsapp.com/KYyxdMVLuy3DoCwOqxIsLY?s=cl&p=i&mlu=4&ilr=4";
-  const REMINDER_TEMPLATE_URL = "./convite-base.jpg";
+  const REMINDER_TEMPLATE_URL = "./convite-template-v3.jpg";
 
   const configured =
     typeof SUPABASE_URL === "string" &&
@@ -469,6 +469,7 @@ textarea{min-height:124px;resize:vertical;line-height:1.5}
 
   let state = null;
   let lastReminderDataUrl = null;
+  const REMINDER_VERSION = "v3";
 
   async function tryAdminLogin(code){
     if(!db) return false;
@@ -805,74 +806,79 @@ textarea{min-height:124px;resize:vertical;line-height:1.5}
     const w = canvas.width;
     const h = canvas.height;
 
-    // 1) Corrige o bloco de data/horário da arte-base.
-    // Limpa TODO o bloco antigo para não sobrar nenhum pedaço de "10/09" ou "15:30".
-    ctx.fillStyle = "#d5b9a1";
-    ctx.fillRect(w*0.505, h*0.438, w*0.455, h*0.175);
+    // Base V3 já vem limpa: sem data antiga, sem tamanho antigo e sem nome.
+    // Aqui desenhamos SOMENTE os dados atuais, evitando sobreposição.
 
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
-    const dateX = w*0.625;
-    const timeX = w*0.825;
-    const titleY = h*0.480;
-    const valueY = h*0.523;
-    const footerY = h*0.570;
+    // 1) Data e horário
+    const dateX = w * 0.615;
+    const timeX = w * 0.815;
+    const titleY = h * 0.486;
+    const valueY = h * 0.526;
+    const footerY = h * 0.566;
 
-    ctx.fillStyle = "#a87956";
-    ctx.font = `700 ${Math.round(w*0.036)}px "Trebuchet MS", Arial, sans-serif`;
+    ctx.fillStyle = "#aa7b59";
+    ctx.font = `700 ${Math.round(w*0.040)}px "Trebuchet MS", Arial, sans-serif`;
     ctx.fillText("DIA", dateX, titleY);
     ctx.fillText("ÀS", timeX, titleY);
 
     ctx.fillStyle = "#704020";
-    ctx.font = `700 ${Math.round(w*0.052)}px Georgia, serif`;
+    ctx.font = `700 ${Math.round(w*0.058)}px Georgia, "Times New Roman", serif`;
     ctx.fillText("10/10", dateX, valueY);
     ctx.fillText("15:30", timeX, valueY);
 
-    // Separador central.
+    // Divisor central
     ctx.fillStyle = "#b7845e";
-    ctx.fillRect(w*0.718, h*0.492, w*0.012, h*0.067);
+    ctx.fillRect(w*0.710, h*0.500, w*0.012, h*0.055);
 
-    ctx.fillStyle = "#a87956";
-    ctx.font = `700 ${Math.round(w*0.031)}px "Trebuchet MS", Arial, sans-serif`;
+    ctx.fillStyle = "#aa7b59";
+    ctx.font = `700 ${Math.round(w*0.034)}px "Trebuchet MS", Arial, sans-serif`;
     ctx.fillText("SÁBADO", dateX, footerY);
     ctx.fillText("HORAS", timeX, footerY);
 
-    // 2) Nome do grupo/família na posição solicitada (~17% x / 46% y).
-    // Limpa suavemente a área branca e desenha o texto sem tocar no presente.
-    ctx.fillStyle = "rgba(247,243,235,.96)";
-    ctx.fillRect(w*0.018, h*0.402, w*0.315, h*0.115);
-
+    // 2) Nome da pessoa/grupo/família na posição pedida (~17% x / 46% y)
     ctx.fillStyle = "#704020";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
-    const centerX = w*0.175;
-    const maxNameWidth = w*0.29;
-    let nameSize = fitFont(ctx, state.group, maxNameWidth, Math.round(w*0.040), Math.round(w*0.026));
-    ctx.font = `700 ${nameSize}px Georgia, serif`;
+    const centerX = w * 0.175;
+    const maxNameWidth = w * 0.30;
+    let nameSize = fitFont(
+      ctx,
+      state.group,
+      maxNameWidth,
+      Math.round(w*0.041),
+      Math.round(w*0.024)
+    );
+
+    ctx.font = `700 ${nameSize}px Georgia, "Times New Roman", serif`;
     let lines = wrapText(ctx, state.group, maxNameWidth);
+
     if(lines.length > 3){
-      nameSize = Math.round(w*0.025);
-      ctx.font = `700 ${nameSize}px Georgia, serif`;
+      nameSize = Math.round(w*0.024);
+      ctx.font = `700 ${nameSize}px Georgia, "Times New Roman", serif`;
       lines = wrapText(ctx, state.group, maxNameWidth);
     }
 
-    const lineHeight = nameSize*1.13;
-    const startY = h*0.458 - ((lines.length-1)*lineHeight)/2;
-    lines.slice(0,3).forEach((line,i)=>ctx.fillText(line,centerX,startY+i*lineHeight));
+    const lineHeight = nameSize * 1.15;
+    const startY = h * 0.462 - ((Math.min(lines.length,3)-1) * lineHeight)/2;
+    lines.slice(0,3).forEach((line,i)=>{
+      ctx.fillText(line, centerX, startY + i*lineHeight);
+    });
 
-    // 3) Tamanho da fralda: SEM valor manual.
-    // Mantém o texto original "TAMANHO DA FRALDA:" e apaga SOMENTE a letra antiga (G)
-    // antes de escrever RN/P/M/G diretamente do retorno do Supabase.
-    ctx.fillStyle = "#e9dccc";
-    ctx.fillRect(w*0.145, h*0.835, w*0.095, h*0.052);
-
+    // 3) Tamanho da fralda: vem EXCLUSIVAMENTE do Supabase.
+    // Não existe RN/P/M/G fixo neste template.
     ctx.fillStyle = "#704020";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.font = `900 ${Math.round(w*0.040)}px Arial, sans-serif`;
-    ctx.fillText(String(state.diaper || "").toUpperCase(), w*0.193, h*0.858);
+    ctx.font = `900 ${Math.round(w*0.041)}px Arial, sans-serif`;
+    ctx.fillText(
+      String(state.diaper || "").toUpperCase(),
+      w * 0.193,
+      h * 0.847
+    );
 
     return canvas.toDataURL("image/jpeg",0.94);
   }
