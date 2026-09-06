@@ -805,27 +805,38 @@ textarea{min-height:124px;resize:vertical;line-height:1.5}
     const w = canvas.width;
     const h = canvas.height;
 
-    // 1) Corrige a data da arte-base de 10/09 para 10/10.
-    // A área usa o mesmo tom areia da composição original.
+    // 1) Corrige o bloco de data/horário da arte-base.
+    // Limpa TODO o bloco antigo para não sobrar nenhum pedaço de "10/09" ou "15:30".
     ctx.fillStyle = "#d5b9a1";
-    ctx.fillRect(w*0.49, h*0.455, w*0.37, h*0.145);
+    ctx.fillRect(w*0.505, h*0.438, w*0.455, h*0.175);
 
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
+
+    const dateX = w*0.625;
+    const timeX = w*0.825;
+    const titleY = h*0.480;
+    const valueY = h*0.523;
+    const footerY = h*0.570;
+
     ctx.fillStyle = "#a87956";
-    ctx.font = `700 ${Math.round(w*0.041)}px "Trebuchet MS", Arial, sans-serif`;
-    ctx.fillText("DIA", w*0.59, h*0.487);
-    ctx.fillText("ÀS", w*0.72, h*0.487);
+    ctx.font = `700 ${Math.round(w*0.036)}px "Trebuchet MS", Arial, sans-serif`;
+    ctx.fillText("DIA", dateX, titleY);
+    ctx.fillText("ÀS", timeX, titleY);
 
     ctx.fillStyle = "#704020";
-    ctx.font = `700 ${Math.round(w*0.056)}px Georgia, serif`;
-    ctx.fillText("10/10", w*0.59, h*0.525);
-    ctx.fillText("15:30", w*0.72, h*0.525);
+    ctx.font = `700 ${Math.round(w*0.052)}px Georgia, serif`;
+    ctx.fillText("10/10", dateX, valueY);
+    ctx.fillText("15:30", timeX, valueY);
+
+    // Separador central.
+    ctx.fillStyle = "#b7845e";
+    ctx.fillRect(w*0.718, h*0.492, w*0.012, h*0.067);
 
     ctx.fillStyle = "#a87956";
-    ctx.font = `700 ${Math.round(w*0.035)}px "Trebuchet MS", Arial, sans-serif`;
-    ctx.fillText("SÁBADO", w*0.59, h*0.566);
-    ctx.fillText("HORAS", w*0.72, h*0.566);
+    ctx.font = `700 ${Math.round(w*0.031)}px "Trebuchet MS", Arial, sans-serif`;
+    ctx.fillText("SÁBADO", dateX, footerY);
+    ctx.fillText("HORAS", timeX, footerY);
 
     // 2) Nome do grupo/família na posição solicitada (~17% x / 46% y).
     // Limpa suavemente a área branca e desenha o texto sem tocar no presente.
@@ -851,15 +862,17 @@ textarea{min-height:124px;resize:vertical;line-height:1.5}
     const startY = h*0.458 - ((lines.length-1)*lineHeight)/2;
     lines.slice(0,3).forEach((line,i)=>ctx.fillText(line,centerX,startY+i*lineHeight));
 
-    // 3) Tamanho da fralda: SEM valor manual. Vem exclusivamente de state.diaper,
-    // que é retornado pelo lookup_invite do Supabase.
-    ctx.fillStyle = "#eadccc";
-    ctx.fillRect(w*0.115, h*0.806, w*0.20, h*0.045);
+    // 3) Tamanho da fralda: SEM valor manual.
+    // Mantém o texto original "TAMANHO DA FRALDA:" e apaga SOMENTE a letra antiga (G)
+    // antes de escrever RN/P/M/G diretamente do retorno do Supabase.
+    ctx.fillStyle = "#e9dccc";
+    ctx.fillRect(w*0.145, h*0.835, w*0.095, h*0.052);
 
     ctx.fillStyle = "#704020";
     ctx.textAlign = "center";
-    ctx.font = `900 ${Math.round(w*0.042)}px Arial, sans-serif`;
-    ctx.fillText(String(state.diaper || "").toUpperCase(), w*0.185, h*0.827);
+    ctx.textBaseline = "middle";
+    ctx.font = `900 ${Math.round(w*0.040)}px Arial, sans-serif`;
+    ctx.fillText(String(state.diaper || "").toUpperCase(), w*0.193, h*0.858);
 
     return canvas.toDataURL("image/jpeg",0.94);
   }
