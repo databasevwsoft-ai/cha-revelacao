@@ -428,7 +428,7 @@ textarea{min-height:124px;resize:vertical;line-height:1.5}
 
   const MAPS_URL = "https://maps.app.goo.gl/kLAfypuQsnPy7Ydy7?g_st=ic";
   const WHATSAPP_GROUP_URL = "https://chat.whatsapp.com/KYyxdMVLuy3DoCwOqxIsLY?s=cl&p=i&mlu=4&ilr=4";
-  const REMINDER_TEMPLATE_URL = "./convite-base.jpg";
+  const REMINDER_TEMPLATE_URL = "./convite-template-final.jpg?v=1";
 
   const configured =
     typeof SUPABASE_URL === "string" &&
@@ -914,7 +914,7 @@ textarea{min-height:124px;resize:vertical;line-height:1.5}
 
     // Sobe levemente o conjunto para aproveitar melhor o espaço vazio.
     const lineHeight = nameSize * 1.18;
-    const centerY = h * 0.465;
+    const centerY = h * 0.430;
     const startY = centerY - ((lines.length - 1) * lineHeight) / 2;
 
     lines.forEach((line,i)=>{
@@ -925,16 +925,10 @@ textarea{min-height:124px;resize:vertical;line-height:1.5}
     // Mantém o texto original "TAMANHO DA FRALDA:" e apaga SOMENTE a letra antiga (G)
     // antes de escrever RN/P/M/G diretamente do retorno do Supabase.
     ctx.fillStyle = "#704020";
-ctx.textAlign = "center";
-ctx.textBaseline = "middle";
-ctx.font = `900 ${Math.round(w*0.040)}px Arial, sans-serif`;
-ctx.fillText(String(state.diaper || "").toUpperCase(), w*0.193, h*0.858);
-
-    ctx.fillStyle = "#704020";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.font = `900 ${Math.round(w*0.040)}px Arial, sans-serif`;
-    ctx.fillText(String(state.diaper || "").toUpperCase(), w*0.193, h*0.856);
+    ctx.fillText(String(state.diaper || "").toUpperCase(), w*0.193, h*0.858);
 
     return canvas.toDataURL("image/jpeg",0.94);
   }
